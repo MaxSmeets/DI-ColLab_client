@@ -1,0 +1,9 @@
+{
+  "short_name": "DI-ColLab",
+  "name": "DI-ColLab hybrid work environment",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
