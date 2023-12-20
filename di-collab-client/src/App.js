@@ -1,7 +1,10 @@
+import WebcamSm from "./components/communication/WebcamSm";
+import Sidebar from "./components/ui_elements/Sidebar";
+
 function App() {
   return (
-    <div>
-      <h1>DI Collab</h1>
+    <div className='w-screen h-screen'>
+      <Sidebar />
     </div>
   );
 }
