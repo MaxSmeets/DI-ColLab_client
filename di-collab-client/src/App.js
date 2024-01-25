@@ -1,11 +1,17 @@
-import WebcamSm from "./components/communication/WebcamSm";
-import Sidebar from "./components/ui_elements/Sidebar";
+import { UserProvider } from "./providers/UserProvider";
+import { ClientProvider } from "./providers/ClientProvider";
+import { RoomProvider } from "./providers/RoomProvider";
+import Stack from "./components/Stack";
 
 function App() {
   return (
-    <div className='w-screen h-screen'>
-      <Sidebar />
-    </div>
+    <ClientProvider>
+      <UserProvider>
+        <RoomProvider>
+          <Stack />
+        </RoomProvider>
+      </UserProvider>
+    </ClientProvider>
   );
 }
 

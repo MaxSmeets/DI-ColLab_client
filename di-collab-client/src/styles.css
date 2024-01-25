@@ -1,0 +1,18 @@
+mxreply {
+  background-color: #f5f5f5;
+
+  word-wrap: break-word;
+}
+
+blockquote {
+  background-color: #444;
+  padding: 0.5em;
+  border-radius: 0.375rem;
+  word-wrap: break-word;
+  font-size: 0.8rem;
+}
+
+a {
+  color: red;
+  word-wrap: break-word;
+}
