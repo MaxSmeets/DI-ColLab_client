@@ -14,6 +14,7 @@ export const UserProvider = ({ children }) => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [warning, setWarning] = useState("");
+  const [volume, setVolume] = useState(0);
 
   return (
     <UserContext.Provider
@@ -34,6 +35,8 @@ export const UserProvider = ({ children }) => {
         setShowPassword,
         warning,
         setWarning,
+        volume,
+        setVolume,
       }}
     >
       {children}

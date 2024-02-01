@@ -16,6 +16,8 @@ export const RoomProvider = ({ children }) => {
   const [cam, setCam] = useState(false);
   const [replying, setReplying] = useState("");
   const [parentUser, setParentUser] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [fileToSend, setFileToSend] = useState(null);
 
   return (
     <RoomContext.Provider
@@ -42,6 +44,10 @@ export const RoomProvider = ({ children }) => {
         setReplying,
         parentUser,
         setParentUser,
+        modalOpen,
+        setModalOpen,
+        fileToSend,
+        setFileToSend,
       }}
     >
       {children}
