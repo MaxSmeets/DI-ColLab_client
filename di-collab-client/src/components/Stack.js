@@ -21,11 +21,11 @@ function Stack() {
       }
     >
       {userId ? (
-        <div className='flex flex-col'>
+        <div className='flex flex-col bg-primary'>
           <div className='flex flex-row w-full'>
             <div className='left-0 w-2/5 p-2 overflow-auto text-white custom-scrollbar'>
               <UserInfo />
-              {roomId ? <Chat /> : <Rooms />}
+              {roomId ? <Chat /> : null}
             </div>
             <div className='text-white'>
               <img
