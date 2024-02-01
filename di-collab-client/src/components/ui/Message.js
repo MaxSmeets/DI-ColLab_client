@@ -1,13 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { useUser } from "../../providers/UserProvider";
 import { useRoom } from "../../providers/RoomProvider";
+import { useClient } from "../../providers/ClientProvider";
+import ImageModal from "./ImageModal";
 import DOMPurify from "dompurify";
 import "../../styles.css";
 import { FiAtSign } from "react-icons/fi";
+import VideoMessage from "./VideoMessage";
 
 function Message({ message, index }) {
+  const { client } = useClient();
   const { userId } = useUser();
-  const { messages, setReplying, setParentUser } = useRoom();
+  const { messages, setReplying, setParentUser, modalOpen, setModalOpen } =
+    useRoom();
   const [hovering, setHovering] = React.useState(false);
 
   function convertUnixToLocal(unixTime) {
@@ -18,6 +23,15 @@ function Message({ message, index }) {
     const timeToDisplay = splitTime[1] + " " + splitTime[2];
 
     return { date: dateToDisplay, time: timeToDisplay };
+  }
+
+  function fetchMxcContent(mxcUrl) {
+    return client.mxcUrlToHttp(
+      mxcUrl,
+      window.innerWidth,
+      window.innerHeight,
+      "scale"
+    );
   }
 
   const { date, time } = convertUnixToLocal(message.event.origin_server_ts);
@@ -49,6 +63,18 @@ function Message({ message, index }) {
       ) {
         // This is a reply message
         return <MatrixMessage htmlContent={eventContent.formatted_body} />;
+      } else if (eventContent.msgtype === "m.image") {
+        const imageUrl = fetchMxcContent(eventContent.url);
+        return (
+          <div>
+            <img
+              onClick={() => setModalOpen(true)}
+              src={imageUrl}
+              className='object-cover w-full h-full rounded-md cursor-pointer'
+            />
+            <ImageModal imageSrc={imageUrl} />
+          </div>
+        );
       } else {
         // Regular message
         return eventContent.formatted_body ? (
@@ -104,6 +130,12 @@ function Message({ message, index }) {
           <p className='text-sm'>{eventContent?.["m.relates_to"]?.rel_type}</p>
         </div>
       );
+    } else if (eventType === "m.call.hangup") {
+      return <VideoMessage sender={message.sender.name} callStatus='ended' />;
+    } else if (eventType === "m.call.invite") {
+      return <VideoMessage sender={message.sender.name} callStatus='ringing' />;
+    } else if (eventType === "m.call.candidates") {
+      return <VideoMessage sender={message.sender.name} />;
     } else {
       // Other event types
       return <p>Unsupported event type</p>;
