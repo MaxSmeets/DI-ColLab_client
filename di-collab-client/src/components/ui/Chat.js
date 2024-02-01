@@ -11,6 +11,7 @@ import {
   FiCamera,
   FiCameraOff,
 } from "react-icons/fi";
+import { FaPaperclip } from "react-icons/fa";
 import ChatDate from "./ChatDate";
 
 function Chat() {
@@ -34,6 +35,9 @@ function Chat() {
     setReplying,
     parentUser,
     setParentUser,
+    setParticipants,
+    fileToSend,
+    setFileToSend,
   } = useRoom();
   const [loadMessages, setLoadMessages] = useState(false);
   const [typing, setTyping] = useState(null);
@@ -47,44 +51,34 @@ function Chat() {
   }, [messages]);
 
   useEffect(() => {
-    const getRoomMembers = (room) => {
-      const members = room.getMembers();
-      return members.filter((member) => {
-        const user = client.getUser(member.userId);
-        return user && user.presence === "online";
-      });
-    };
-
     const setupEventListeners = () => {
       client.on("Room.typing", (event, room) => {
         if (room.roomId === roomId) {
+          console.log(event);
           setTyping(event.userIds[0]);
         }
       });
 
-      client.on("sync", (state) => {
-        if (state === "PREPARED") {
-          if (room) {
-            const timeline = room.getLiveTimeline();
-            const events = timeline.getEvents();
-            setMessages(events);
-            const onlineMembers = getRoomMembers(room);
-            console.log("Online members:", onlineMembers);
+      client.on(
+        "Room.timeline",
+        (event, room, toStartOfTimeline, removed, data) => {
+          if (room.roomId === roomId && !toStartOfTimeline) {
+            setMessages((prevMessages) => [...prevMessages, event]);
+            console.log(event);
           }
         }
-      });
+      );
     };
 
     if (roomId) {
       setupEventListeners();
     }
 
-    // Cleanup
     return () => {
       client.removeAllListeners("Room.typing");
-      client.removeAllListeners("sync");
+      client.removeAllListeners("Room.timeline");
     };
-  }, [client, roomId, setRoom, setMessages]);
+  }, [client, roomId]);
 
   useEffect(() => {
     if (roomId) {
@@ -179,7 +173,6 @@ function Chat() {
   const getEvent = (eventId) => {
     if (room) {
       const event = room.findEventById(eventId);
-      console.log(event);
       return event;
     }
 
@@ -193,7 +186,7 @@ function Chat() {
       const replyToUserLink = `https://matrix.to/#/${event.sender}`;
       const replyToUserName = event.sender.name ?? event.sender.userId;
       const replyToMessage =
-        event.event.content.body ?? event.content.memebership;
+        event.event.content.body ?? event.event.content.membership;
       const senderMessage = message;
 
       const formattedBody = `<mx-reply><blockquote><a href="${replyToLink}">In reply to</a> <a href="${replyToUserLink}">${replyToUserName}</a><br />${replyToMessage}</blockquote></mx-reply>${senderMessage}`;
@@ -223,14 +216,43 @@ function Chat() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (message.trim() !== "") {
+
+    if (fileToSend) {
+      await uploadAndSendImage(fileToSend);
+    } else if (message.trim() !== "") {
       client.sendEvent(roomId, "m.room.message", {
         body: message,
         msgtype: "m.text",
       });
-      console.log(message);
       setMessage("");
     }
+  };
+
+  const uploadAndSendImage = async (file) => {
+    try {
+      const response = await client.uploadContent(file);
+      const contentUri = response.content_uri;
+
+      if (contentUri) {
+        await client.sendImageMessage(roomId, contentUri, {}, file.name);
+        clearFileInput();
+      }
+    } catch (error) {
+      console.error("Failed to send image:", error);
+    }
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setFileToSend(file); // Set the file to send
+    }
+  };
+
+  const clearFileInput = () => {
+    setFileToSend(null);
+    // Reset the value of the file input
+    document.getElementById("file-upload").value = "";
   };
 
   return (
@@ -267,7 +289,7 @@ function Chat() {
         >
           <div className='w-full'>
             <input
-              className='w-5/6 max-w-full max-h-full p-1 mr-2 text-black'
+              className='w-full p-1 mr-2 text-black rounded-md'
               placeholder='Start typing....'
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -275,18 +297,32 @@ function Chat() {
           </div>
           <button
             type='submit'
-            className='p-2 border rounded-full cursor-pointer bg-slate-700 hover:bg-logoBackdrop'
+            className='p-2 ml-2 border rounded-full cursor-pointer bg-slate-700 hover:bg-logoBackdrop'
             disabled={message !== "" ? false : true}
           >
             <FiSend />
           </button>
-          <button
+          <label
+            htmlFor='file-upload'
+            className='p-2 ml-2 border rounded-full cursor-pointer bg-slate-700 hover:bg-logoBackdrop'
+          >
+            <FaPaperclip className='text-lg' />
+          </label>
+          <input
+            type='file'
+            id='file-upload'
+            onChange={handleFileChange}
+            accept='image/*'
+            className='hidden'
+          />
+          {/* Button to go back to rooms (for later room selection implementation) */}
+          {/* <button
             type='button'
             className='p-2 ml-2 border rounded-full cursor-pointer bg-slate-700 hover:bg-logoBackdrop'
             onClick={exitRoom}
           >
             <FiHome />
-          </button>
+          </button> */}
         </form>
         <div className='flex flex-row mt-2'>
           <button
@@ -325,6 +361,17 @@ function Chat() {
               </button>
             </div>
           ) : null}
+          {fileToSend && (
+            <div className='flex items-center px-1 ml-2 rounded-md bg-slate-700'>
+              <span className='text-sm break-words'>{fileToSend.name}</span>
+              <button
+                className='w-8 p-1 ml-2 rounded-full bg-logoBackdrop'
+                onClick={clearFileInput}
+              >
+                X
+              </button>
+            </div>
+          )}
         </div>
       </div>
       {typing ?? <p>{typing}</p>}
