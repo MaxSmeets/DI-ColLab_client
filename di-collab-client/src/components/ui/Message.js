@@ -131,11 +131,29 @@ function Message({ message, index }) {
         </div>
       );
     } else if (eventType === "m.call.hangup") {
-      return <VideoMessage sender={message.sender.name} callStatus='ended' />;
+      return (
+        <VideoMessage
+          sender={message.sender.name}
+          callId={message.event.call_id}
+          callStatus='ended'
+        />
+      );
     } else if (eventType === "m.call.invite") {
-      return <VideoMessage sender={message.sender.name} callStatus='ringing' />;
+      return (
+        <VideoMessage
+          sender={message.sender.name}
+          callId={message.event.call_id}
+          callStatus='ringing'
+        />
+      );
     } else if (eventType === "m.call.candidates") {
-      return <VideoMessage sender={message.sender.name} />;
+      return (
+        <VideoMessage
+          sender={message.sender.name}
+          callId={message.event.call_id}
+          callStatus='candidates'
+        />
+      );
     } else {
       // Other event types
       return <p>Unsupported event type</p>;

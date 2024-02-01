@@ -11,7 +11,7 @@ import {
   FiCamera,
   FiCameraOff,
 } from "react-icons/fi";
-import { FaPaperclip } from "react-icons/fa";
+import { FaPaperclip, FaPhone } from "react-icons/fa";
 import ChatDate from "./ChatDate";
 
 function Chat() {
@@ -315,6 +315,9 @@ function Chat() {
             accept='image/*'
             className='hidden'
           />
+          <button className='p-2 ml-2 border rounded-full cursor-pointer bg-slate-700 hover:bg-logoBackdrop'>
+            <FaPhone />
+          </button>
           {/* Button to go back to rooms (for later room selection implementation) */}
           {/* <button
             type='button'
