@@ -63,19 +63,21 @@ function Login() {
     setLoading(true);
     const response = await login(username, password);
     if (response) {
-      const { user_id, access_token, refresh_token } = response;
+      const { user_id, access_token, refresh_token, device_id } = response;
       setToken(access_token);
       const client = sdk.createClient({
         baseUrl: "https://matrix.org",
         accessToken: access_token,
         userId: user_id,
         refreshToken: refresh_token,
+        deviceId: device_id,
       });
       setClient(client);
-      console.log(client.whoami());
       await client.startClient({ initialSyncLimit: 200 });
-      client.publicRooms(function (err, data) {});
+      // client.publicRooms(function (err, data) {});
       setLoading(false);
+      //hard coded room Id, to be replaced with room selection
+      setRoomId("!CABGFePlElpiJIoaQl:matrix.org");
     }
   }
 
