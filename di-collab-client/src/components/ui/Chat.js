@@ -54,7 +54,6 @@ function Chat() {
     const setupEventListeners = () => {
       client.on("Room.typing", (event, room) => {
         if (room.roomId === roomId) {
-          console.log(event);
           setTyping(event.userIds[0]);
         }
       });
@@ -64,7 +63,6 @@ function Chat() {
         (event, room, toStartOfTimeline, removed, data) => {
           if (room.roomId === roomId && !toStartOfTimeline) {
             setMessages((prevMessages) => [...prevMessages, event]);
-            console.log(event);
           }
         }
       );
